@@ -1,0 +1,6 @@
+import {readFileSync} from 'node:fs';import {createHmac,randomUUID} from 'node:crypto';
+const vars=readFileSync('.dev.vars','utf8');const token=vars.match(/^BOT_TOKEN=(.*)$/m)[1].trim().replace(/^['"]|['"]$/g,'');
+const params=new URLSearchParams({auth_date:String(Math.floor(Date.now()/1000)),user:JSON.stringify({id:987654321,first_name:'QA'})});
+const check=[...params].sort(([a],[b])=>a.localeCompare(b)).map(([k,v])=>`${k}=${v}`).join('\n');const secret=createHmac('sha256','WebAppData').update(token).digest();params.set('hash',createHmac('sha256',secret).update(check).digest('hex'));const initData=params.toString();
+async function call(path,action,requestId){const r=await fetch('http://127.0.0.1:8787'+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({initData,action,requestId})});const d=await r.json();if(!r.ok)throw new Error(JSON.stringify({status:r.status,data:d}));return d.state;}
+const before=await call('/api/state');const id=randomUUID();const first=await call('/api/action',{type:'tap',count:1},id);const second=await call('/api/action',{type:'tap',count:1},id);if(first.taps!==before.taps+1||second.taps!==first.taps)throw new Error('Persistence or duplicate protection failed');console.log('Authenticated state/action and duplicate request protection pass');

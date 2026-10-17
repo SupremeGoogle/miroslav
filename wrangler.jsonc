@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "miroslav-tap",
+  "main": "worker/index.js",
+  "compatibility_date": "2026-10-01",
+  "assets": { "directory": "./public", "binding": "ASSETS", "run_worker_first": ["/api/*", "/bot/*"] },
+  "durable_objects": { "bindings": [{ "name": "PLAYERS", "class_name": "PlayerStore" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["PlayerStore"] }],
+  "vars": { "APP_URL": "https://miroslav-tap.YOUR-SUBDOMAIN.workers.dev" },
+  "observability": { "enabled": true }
+}
